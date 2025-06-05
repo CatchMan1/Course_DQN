@@ -3,11 +3,11 @@ import numpy as np
 from gym import spaces
 
 class UserSimEnv(gym.Env):
-    def __init__(self, item_pool, user_simulator, max_steps=4):
+    def __init__(self, item_pool, user_simulator, max_steps=15):
         super().__init__()
         # 定义动作空间：一次从 候选集中选一个，action 就是 选出的候选课程的索引
         self.item_pool = item_pool
-        self.action_space = spaces.Discrete(len(item_pool))
+
         # 定义状态空间，状态包括：用户简档，历史项目交互集，历史喜欢的项目，历史讨厌的项目
         # 获取一次状态向量的维度，用于定义 observation_space
         self.user_simulator = user_simulator #逻辑模型+统计模型
@@ -15,6 +15,8 @@ class UserSimEnv(gym.Env):
         self.max_steps = max_steps
         self._max_episode_steps = max_steps #重写时保持格式一致
         dummy_history = list(self.user_simulator.history)
+        self.action_space = spaces.Discrete(len(item_pool))   # 动作空间是离散的，大小为候选课程池的长度
+        print("action_space:", self.action_space)
         self.history = dummy_history
         dummy_state = self._make_state()
         obs_dim = dummy_state.shape[0]# 获取实时维度
@@ -39,14 +41,16 @@ class UserSimEnv(gym.Env):
     def step(self, action):
         # action 是一个整数，代表 item_pool[action]
         item = self.item_pool[action] # action为取出项目的索引，取出的为candidate_item
+        item_index = action
+        # print("item_index:", item_index)
 
         # 使用 两个逻辑模型 + 统计模型 模拟器产生反馈 0/1
-        feedback = self.user_simulator.predict_feedback(self.history, item)
+        feedback = self.user_simulator.predict_feedback(self.history, item_index)
         # 设置奖励
         reward = 1 if feedback == 1 else 0
 
         # 更新历史状态
-        self.history.append((item, feedback))
+        self.history.append((item_index, feedback))
         self.current_step += 1
         next_state = self._make_state()
         terminated = False
@@ -54,7 +58,7 @@ class UserSimEnv(gym.Env):
         info = {
         "user_id": self.user_simulator.user_id,
         "feedback": feedback,
-        "current_item": item,
+        "current_item": item_index,
         "step": self.current_step
         }
         # print("recommendation info:", info)

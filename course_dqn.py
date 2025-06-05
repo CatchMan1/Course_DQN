@@ -16,7 +16,6 @@ class DQN(object):
         self.use_soft_update = args.use_soft_update
         self.target_update_freq = args.target_update_freq  # hard update
         self.update_count = 0
-
         self.grad_clip = args.grad_clip
         self.use_lr_decay = args.use_lr_decay
         self.use_double = args.use_double
@@ -35,15 +34,22 @@ class DQN(object):
         # 选用Adam参数优化器
         self.optimizer = torch.optim.Adam(self.net.parameters(), lr=self.lr)
     # 贪婪算法
-    def choose_action(self, state, epsilon):
+    def choose_action(self, state, epsilon, available_actions):
         with torch.no_grad():
             state = torch.unsqueeze(torch.tensor(state, dtype=torch.float), 0)
             # 传入网络，输出动作维度，在候选集中选择动作
             q = self.net(state)
+            # 索引-1，课程号从1开始，索引从0开始
+            available_indices = torch.tensor([aid - 1 for aid in available_actions], dtype=torch.long)
+        
+            q_available = q[0, available_indices]  # 只取前action_dim个动作的Q值
             if np.random.uniform() > epsilon:
-                action = q.argmax(dim=-1).item()
+                idx = q_available.argmax().item()
+
             else:
-                action = np.random.randint(0, self.action_dim)
+                idx = np.random.randint(0, len(available_indices))
+            action = available_actions[idx]
+        
             return action
 
     def learn(self, replay_buffer, total_steps):

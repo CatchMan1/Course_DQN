@@ -1,0 +1,34 @@
+class_id,class_name,keywords_pos,keywords_neg,preference
+73,Data security challenges and responses in the era of artificial intelligence,Protect Safeguard Ensure Important Significance Promote Healthy Development Support Strong Response,challenge issue leakage breach theft threat problem disclosure,0
+31,Enhancing personalized learning: AI-driven identification of learning stylesand content modification strategies,Enhancing personalized AI-driven effective successfully best accomplished engaging efficient integrated fostering unique,traditional education manual learning non-ai robotics finance healthcare teacher training school administration education policy physical classroom,1
+7,BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding,new deep bidirectional state-of-the-art wide simple powerful improvement,GPT ELMo unidirectional autoregressive shallow labeled task-specific custom complex,0
+32,Implementing the Dynamic Feedback-Driven LearningOptimization Framework: A Machine Learning Approach to Personalize Educational Pathways,Optimization Dynamic Personalized Enhance Engagement Effectiveness Real-time Tailored Potential Advanced Support Contribute Advancements,traditional offline manual static general unpersonalized one-size-fits-all classroom management educational policy educational funding humanities art history literature,1
+46,Design of Dish Automatic Recognition and Settlement Device Based on AI Visual Technology,efficiency experience smart high-performance rapid stability quickly accurately automatic convenient precise quality,manual traditional error inaccurate slow inefficient human non-ai non-visual non-automatic waiter cashier paper queue,0
+33,Exploring the Impact of Artificial Intelligence in Teaching and Learning of Science: A Systematic Review of Empirical Research,transforming active progression understanding evidence-based consolidated benefits enhancing learning outcomes achieve integration implications systematic empirical teaching,finance marketing healthcare manufacturing business entertainment art music law history literature language politics,1
+1,Role of AI chatbots in education: systematic literature review,revolutionize immediate support explanations resources assistants supporting benefits opportunities prospects numerous gain assistance personalized development skills advantages time-saving improved,challenges limitations concerns reliability accuracy ethical considerations,0
+34,The Impact of Artificial Intelligence on Higher Education: An Empirical Study,"growing
+crucial
+effectiveness
+efficiency
+equipping
+new
+importance
+prepare
+potential
+revolutionize
+personalizing
+suit
+prompt
+freeing
+quality
+positive
+facilitating
+acquisition
+insights
+transform
+contribute
+development
+important
+better",negative detrimental k-12 primary secondary manual traditional quantitative history funding unrelated no effect decline stagnation experimental,1
+9,Playing Atari with Deep Reinforcement Learning,successfully first learn rewards outperforms surpasses,supervised unsupervised classification regression clustering svm decision tree random forest nlp speech robotics self-driving finance healthcare feature engineering rnn gan transformer,0
+35,Integrating Artificial Intelligence in Education: Impacts on Student Learning and Innovation,Learning Innovation Engagement Success Creativity Gains Positive Improve Achievement Benefits Potential Effectively Advantage Outcomes Best Significance Difference Knowledge,confounding inability constraints implications,1
