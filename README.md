@@ -1,25 +1,21 @@
-# Rainbow DQN
-This is a concise Pytorch implementation of Rainbow DQN, including Double Q-learning, Dueling network, Noisy network, PER and n-steps Q-learning.<br />
+# Course LLM Recommendation
+这是一个采用集成模型作为用户模拟器给出反馈，RL作为整体的推荐智能体（单Agent）
+1.初始化：
+加载用户历史交互数据和候选项目特征。
+使用LLM对候选项目进行分析，生成类别信息和关键词。
+2.推荐决策：（DQN强化学习的action部分，根据状态给出下一步的动作）
+推荐系统根据当前状态（用户历史行为和上下文信息）选择一个候选项目推荐给用户。
+3.用户反馈模拟：（LLM+逻辑模型和统计模型作为奖励信号的传递，用于指导DQN的action）
+用户模拟器根据候选项目的特征和用户历史行为，使用集成模型（LLM+逻辑＋统计）推断用户对项目的反馈（如“喜欢”或“不喜欢”）。<br />
 
 ## How to use my code?
-You can dircetly run Rainbow_DQN_main.py in your own IDE.<br />
+你可以直接在 Course_DQN_main.py 里运行代码，记得把里面的绝对路径改为相对路径<br />
 
 ### Trainning environments
-You can set the 'env_index' in the code to change the environments.<br />
-env_index=0 represent 'CartPole-v1'<br />
-env_index=1 represent 'LunarLander-v2'<br />
-
+训练环境为自己定义的课程推荐环境，可以在environment.py里面进行查看<br />
+### User simulator
+用户模拟器可以在simulator.py进行查看，具体包含了两个逻辑模型以及一个统计模型，用于对DQN推荐的结果进行打分，作为奖励<br />
 ### How to see the training results?
-You can use the tensorboard to visualize the training curves, which are saved in the file 'runs'.<br />
-The rewards data are saved as numpy in the file 'data_train'.<br />
-The training curves are shown below.<br />
-The right picture is smoothed by averaging over a window of 10 steps. The solid line and the shadow respectively represent the average and standard deviation over three different random seeds. (seed=0, 10, 100)<br />
-![image](https://github.com/Lizhi-sjtu/DRL-code-pytorch/blob/main/3.Rainbow_DQN/rainbow_dqn_result.png)
+你可以直接运行render.py中来得到运行结果，目前的结果只是训练其中一名学生的课程推荐结果<br />
 
-## Reference
-[1] Mnih V, Kavukcuoglu K, Silver D, et al. Human-level control through deep reinforcement learning[J]. nature, 2015, 518(7540): 529-533.<br />
-[2] Van Hasselt H, Guez A, Silver D. Deep reinforcement learning with double q-learning[C]//Proceedings of the AAAI conference on artificial intelligence. 2016, 30(1).<br />
-[3] Wang Z, Schaul T, Hessel M, et al. Dueling network architectures for deep reinforcement learning[C]//International conference on machine learning. PMLR, 2016: 1995-2003.<br />
-[4] Fortunato M, Azar M G, Piot B, et al. Noisy networks for exploration[J]. arXiv preprint arXiv:1706.10295, 2017.<br />
-[5] Schaul T, Quan J, Antonoglou I, et al. Prioritized experience replay[J]. arXiv preprint arXiv:1511.05952, 2015.<br />
-[6] Hessel M, Modayil J, Van Hasselt H, et al. Rainbow: Combining improvements in deep reinforcement learning[C]//Thirty-second AAAI conference on artificial intelligence. 2018.<br />
+
