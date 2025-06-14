@@ -63,7 +63,7 @@ class UserSimEnv(gym.Env):
         }
         # print("recommendation info:", info)
         return next_state, reward, terminated, truncated, info  # 新版Gym返回五个值，把done改为terminated + truncated
-
+    
     # 把用户简档、历史交互，Ipos、Ineg进行拼接
     def _make_state(self):
         # 用户简档嵌入
@@ -100,7 +100,7 @@ class UserSimEnv(gym.Env):
         else:
             neg_emb = np.zeros(D)
 
-        # 拼接 state 向量
+    
         state_vec = np.concatenate([user_emb, hist_emb, pos_emb, neg_emb], axis=0)
         return state_vec.astype(np.float32)
 

@@ -323,7 +323,7 @@ if __name__ == '__main__':
             masked_output = outputs.last_hidden_state * encoded['attention_mask'].unsqueeze(-1)
             mean_output = masked_output[:, 1:, :].sum(dim=1) / encoded['attention_mask'][:, 1:].sum(dim=-1, keepdim=True)
             user_profile_emb = mean_output[0].cpu().numpy()
-
+        # print("user_profile_emb",user_profile_emb)
         # 构建用户模拟器
         sim = UserSimulator(
             user_id=user_id,
@@ -336,10 +336,10 @@ if __name__ == '__main__':
             statistical_model=stat_model
         )
 
-        # 训练并保存模型
-        seed = 0  # 可根据需要设置不同种子
-        runner = Runner(args=args, user_simulator=sim, number=1, seed=seed)
-        runner.run()  # 内部已包含模型保存逻辑
+        # # 训练并保存模型
+        # seed = 0  # 可根据需要设置不同种子
+        # runner = Runner(args=args, user_simulator=sim, number=1, seed=seed)
+        # runner.run()  # 内部已包含模型保存逻辑
 
     print("所有用户模型训练完毕！")
 
@@ -366,12 +366,10 @@ if __name__ == '__main__':
             print(f"推荐课程ID: {action}, 奖励: {reward}, 反馈: {step_info}")
             done = terminated or truncated
             state = next_state
-    from collections import defaultdict
 
     def evaluate_rl_recommendation(user_ids, args, item_pool, item_keywords_pos, item_keywords_neg, item_embeddings, user_profiles, stat_model, device):
         all_pred = defaultdict(list)  # user_id -> 推荐列表
         all_gt = {}                  # user_id -> 真实测试集item列表
-
         for user_id in user_ids:
             # 读取用户历史，分割训练集和测试集
             history_item = []
@@ -387,7 +385,19 @@ if __name__ == '__main__':
             else:
                 train_history_item = []
                 test_gt_items = [item for item, fb in history_item if fb == 1]
-
+            # 用户简档嵌入
+            with torch.no_grad():
+                encoded = plm_tokenizer(
+                    user_profiles[user_id],
+                    padding=True,
+                    max_length=512,
+                    truncation=True,
+                    return_tensors='pt'
+                ).to(device)
+                outputs = plm_model(**encoded)
+                masked_output = outputs.last_hidden_state * encoded['attention_mask'].unsqueeze(-1)
+                mean_output = masked_output[:, 1:, :].sum(dim=1) / encoded['attention_mask'][:, 1:].sum(dim=-1, keepdim=True)
+                user_profile_emb = mean_output[0].cpu().numpy()
             # 构建用户模拟器，加载模型
             sim = UserSimulator(
                 user_id=user_id,
@@ -395,7 +405,7 @@ if __name__ == '__main__':
                 item_keywords_pos=item_keywords_pos,
                 item_keywords_neg=item_keywords_neg,
                 item_embeddings=item_embeddings,
-                user_profile_emb=user_profiles[user_id],
+                user_profile_emb=user_profile_emb,
                 init_history=train_history_item,
                 statistical_model=stat_model
             )
@@ -421,7 +431,8 @@ if __name__ == '__main__':
                 state = next_state
             all_pred[user_id] = rec_list
             all_gt[user_id] = test_gt_items
-
+        print("all_pred:", all_pred)
+        print("all_gt:", all_gt)
         # 汇总所有用户，计算整体Precision和Recall
         hit = 0
         total_pred = 0

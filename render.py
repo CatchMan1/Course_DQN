@@ -22,11 +22,11 @@ with open('DRL-code-pytorch-main/Course_DQN/SASREC/ai_user_summary_output_fixed.
 # Configuration 
 ALGO       = 'Course_DQN'      # Runner.algorithm
 NUMBER     = 1                 # Runner.number
-SEEDS      = [0]      # 训练时用到的随机种子列表
+SEEDS      = 0      # 训练时用到的随机种子列表
 EVALUATE_FREQ = 1000           # 评估频率（与你训练脚本里的一致）
-
+seed = 0                  # 评估时用到的随机种子
 # 所有文件都在这个目录下（根据自己项目结构修改）
-DATA_DIR = 'DRL-code-pytorch-main/Course_DQN/data_train'
+DATA_DIR = 'DRL-code-pytorch-main/Course_DQN/data_train/U202242844'
 
 # 课程列表，对应动作索引
 
@@ -42,19 +42,17 @@ def load_and_smooth_rewards(path):
     return np.array(smooth)
 
 plt.figure(figsize=(8,5))
-for seed in SEEDS:
-    rfile = f"{ALGO}_number_{NUMBER}_seed_{seed}.npy"
-    path = os.path.join(DATA_DIR, rfile)
-    rewards = load_and_smooth_rewards(path)
-    # print("Rewards for seed {}: {}".format(seed, rewards))
-    steps = np.arange(len(rewards)) * EVALUATE_FREQ
-    plt.plot(steps, rewards, label=f'seed={seed}', alpha=0.7)
+rfile = f"{ALGO}_number_{NUMBER}_seed_{seed}.npy"
+path = os.path.join(DATA_DIR, rfile)
+rewards = load_and_smooth_rewards(path)
+print("Rewards for seed {}: {}".format(seed, rewards))
+steps = np.arange(len(rewards)) * EVALUATE_FREQ
+plt.plot(steps, rewards, label=f'seed={seed}', alpha=0.7)
 
 # 平均曲线
 all_smooth = []
-for seed in SEEDS:
-    path = os.path.join(DATA_DIR, f"{ALGO}_number_{NUMBER}_seed_{seed}.npy")
-    all_smooth.append(load_and_smooth_rewards(path))
+path = os.path.join(DATA_DIR, f"{ALGO}_number_{NUMBER}_seed_{seed}.npy")
+all_smooth.append(load_and_smooth_rewards(path))
 all_smooth = np.stack(all_smooth, axis=0)
 mean_rewards = all_smooth.mean(axis=0)
 plt.plot(np.arange(len(mean_rewards)) * EVALUATE_FREQ,
