@@ -11,6 +11,7 @@ from sentence_transformers import SentenceTransformer
 from SASREC.Rec import load_plm, generate_item_embedding
 from SASREC.A_SASRec_final_bce_llm import SASRec
 from collections import defaultdict
+from render import Render
 import csv
 import os
 class Runner:
@@ -279,7 +280,7 @@ if __name__ == '__main__':
     item_text_dic = {
         item_id: " ".join(item_keywords_pos.get(item_id, set()) | item_keywords_neg.get(item_id, set()))
         for item_id in item_pool
-}
+    }
     item_text_dic[0] = ""  # 添加 padding 项目，用空字符串
     # 批量生成item_embeddings 维度为（81，768）的tensor, 内容包含了课程的积极和消极关键词文本的嵌入
     item_embeddings = generate_item_embedding(item_text_dic, plm_tokenizer, plm_model, word_drop_ratio=-1)
@@ -343,31 +344,7 @@ if __name__ == '__main__':
 
     print("所有用户模型训练完毕！")
 
-    def recommend_courses(args, user_simulator, user_id, algorithm, number, seed, device):
-        model_path = f'DRL-code-pytorch-main/Course_DQN/model/{user_id}/{algorithm}_number_{number}_seed_{seed}_best.pth'
-        runner = Runner(args=args, user_simulator=user_simulator, number=number, seed=seed)
-        runner.agent.net.load_state_dict(torch.load(model_path, map_location=device))
-        runner.agent.net.eval()  # 切换到评估模式
-
-        state, info = runner.env_evaluate.reset()
-        done = False
-        recommended_items = [h[0] for h in runner.env_evaluate.history]  # 已有历史推荐
-
-        print(f"用户 {user_id} 推荐序列：")
-        while not done:
-            # 生成可选动作（未推荐过的 item 的ID）
-            available_actions = [item_id for item_id in runner.item_pool if item_id not in recommended_items]
-            if not available_actions:
-                break
-            # 用训练好的模型贪婪推荐
-            action = runner.agent.choose_action(state, epsilon=0, available_actions=available_actions)
-            recommended_items.append(action)
-            next_state, reward, terminated, truncated, step_info = runner.env_evaluate.step(action)
-            print(f"推荐课程ID: {action}, 奖励: {reward}, 反馈: {step_info}")
-            done = terminated or truncated
-            state = next_state
-
-    def evaluate_rl_recommendation(user_ids, args, item_pool, item_keywords_pos, item_keywords_neg, item_embeddings, user_profiles, stat_model, device):
+    def result_reasoning(user_ids, args, item_pool, item_keywords_pos, item_keywords_neg, item_embeddings, user_profiles, stat_model, device):
         all_pred = defaultdict(list)  # user_id -> 推荐列表
         all_gt = {}                  # user_id -> 真实测试集item列表
         for user_id in user_ids:
@@ -431,25 +408,13 @@ if __name__ == '__main__':
                 state = next_state
             all_pred[user_id] = rec_list
             all_gt[user_id] = test_gt_items
-        print("all_pred:", all_pred)
-        print("all_gt:", all_gt)
-        # 汇总所有用户，计算整体Precision和Recall
-        hit = 0
-        total_pred = 0
-        total_gt = 0
-        for user_id in user_ids:
-            pred_set = set(all_pred[user_id])
-            gt_set = set(all_gt[user_id])
-            hit += len(pred_set & gt_set)
-            total_pred += len(pred_set)
-            total_gt += len(gt_set)
-        precision = hit / total_pred if total_pred > 0 else 0
-        recall = hit / total_gt if total_gt > 0 else 0
-        print(f"整体 Precision: {precision:.4f}, Recall: {recall:.4f}")
-        return precision, recall
-
+        # print("all_pred:", all_pred)
+        # print("all_gt:", all_gt)
+        # 只返回推荐结果和真实结果
+        return all_pred, all_gt
     
-    precision, recall = evaluate_rl_recommendation(
+    print("user_ids:", user_ids)
+    all_pred, all_gt = result_reasoning(
     user_ids=user_ids,
     args=args,
     item_pool=item_pool,
@@ -459,4 +424,8 @@ if __name__ == '__main__':
     user_profiles=user_profiles,
     stat_model=stat_model,
     device=device
-)
+    )
+    all_pred_random = Render.random_recommend(user_ids)
+
+    precision, recall = Render.Recall_analyse(all_pred, all_gt, user_ids)
+    ran_precision, ran_recall = Render.Recall_analyse(all_pred_random, all_gt, user_ids)

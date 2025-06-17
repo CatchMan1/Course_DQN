@@ -1,3 +1,4 @@
+
 # Course LLM Recommendation
 这是一个采用集成模型作为用户模拟器给出反馈，RL作为整体的推荐智能体（单Agent）
 1.初始化：
@@ -7,6 +8,10 @@
 推荐系统根据当前状态（用户历史行为和上下文信息）选择一个候选项目推荐给用户。
 3.用户反馈模拟：（LLM+逻辑模型和统计模型作为奖励信号的传递，用于指导DQN的action）
 用户模拟器根据候选项目的特征和用户历史行为，使用集成模型（LLM+逻辑＋统计）推断用户对项目的反馈（如“喜欢”或“不喜欢”）。<br />
+
+## 对于SASRec模型的单独训练
+你可以直接在运行Rec代码得到结果，但是前提是要将Rec文件中的这两行代码的注释去除：# from A_SASRec_final_bce_llm import SASRec；# from SASRecModules_ori import *，同时对这两行代码加上注释from SASREC.A_SASRec_final_bce_llm import SASRec；from SASREC.SASRecModules_ori import *
+不仅如此，你需要进入A_SASRec_final_bce_llm.py文件中，解除这行代码的注释：# from SASRecModules_ori import *；并把这行代码加上注释：from SASREC.SASRecModules_ori import *
 
 ## How to use my code?
 你可以直接在 Course_DQN_main.py 里运行代码，记得把里面的绝对路径改为相对路径<br />
