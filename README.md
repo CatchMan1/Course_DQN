@@ -23,4 +23,11 @@
 ### How to see the training results?
 你可以直接运行render.py中来得到运行结果，目前的结果只是训练其中一名学生的课程推荐结果<br />
 
+# 非强化学习
+## 模型训练
+采用了基于项目的推荐，请直接运行direct_rec.py得到训练后的模型并保存对应权重，输出精确率与召回率。本模型的推荐召回率高于随机推荐
+## 模型推理
+你可以在inference_only.py中加载模型并进行推荐，具体可以查看inference_only.py中的代码，里面有详细的注释<br />
 
+## Web端API调用
+你可以运行api.py来启动一个flask服务器，然后通过curl命令或者postman来调用API，具体可以查看api.py中的代码，里面有详细的注释，开头有对应的curl命令示例<br />
