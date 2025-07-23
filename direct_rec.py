@@ -4,6 +4,10 @@ import torch
 from sklearn.metrics.pairwise import cosine_similarity
 from SASREC.Rec import load_plm, generate_item_embedding
 from render import Render
+import pickle
+import json
+import os
+
 # 用户简档尚未加入进去计算
 # 这里是计算候选项目与用户历史项目之间的相似度（关键词匹配，项目未嵌入，采用文本分词匹配）
 def f_mat(history, candidate_item, item_keywords_pos, item_keywords_neg):
@@ -33,25 +37,41 @@ def f_sim(history, candidate_item, item_embeddings):
     return beta_pos - beta_neg  # 返回差值作为分数
 
 def recommend_top_k(user_history, item_pool, item_keywords_pos, item_keywords_neg, item_embeddings, k=10, alpha=0.5):
+    # 提取用户已交互过的项目ID
+    interacted_items = set([item_id for item_id, _ in user_history])
+    
+    # 过滤掉已交互的项目
+    candidate_items = [item for item in item_pool if item not in interacted_items]
+    
+    if len(candidate_items) == 0:
+        print("警告：没有可推荐的新项目")
+        return [], []
+    
     mat_scores = []
     sim_scores = []
-    for item in item_pool:
+    
+    # 只对未交互的项目计算分数
+    for item in candidate_items:
         mat_score = f_mat(user_history, item, item_keywords_pos, item_keywords_neg)
         sim_score = f_sim(user_history, item, item_embeddings)
         mat_scores.append(mat_score)
         sim_scores.append(sim_score)
+    
     # 归一化
     mat_min, mat_max = min(mat_scores), max(mat_scores)
     sim_min, sim_max = min(sim_scores), max(sim_scores)
     mat_scores_norm = [(s - mat_min) / (mat_max - mat_min) if mat_max > mat_min else 0.0 for s in mat_scores]
     sim_scores_norm = [(s - sim_min) / (sim_max - sim_min) if sim_max > sim_min else 0.0 for s in sim_scores]
+    
     # 加权求和
     total_scores = [alpha * m + (1 - alpha) * s for m, s in zip(mat_scores_norm, sim_scores_norm)]
-    # 排序并返回前k
-    scores = list(zip(item_pool, total_scores))
-    top_k_socre = sorted(scores, key=lambda x: x[1], reverse=True)[:k]
-    top_k = [item for item, score in top_k_socre]
-    return top_k_socre, top_k  # 返回分数和推荐列表
+    
+    # 排序并返回前k个
+    scores = list(zip(candidate_items, total_scores))
+    top_k_score = sorted(scores, key=lambda x: x[1], reverse=True)[:k]
+    top_k = [item for item, score in top_k_score]
+    
+    return top_k_score, top_k
 
 def recommend_for_users(user_histories, item_pool, item_keywords_pos, item_keywords_neg, item_embeddings, k=10):
     user_recommendations_scores = {}
@@ -137,11 +157,40 @@ for user_id in user_ids:
 
 user_recommendations_scores, user_recommendations = recommend_for_users(user_histories, item_pool, item_keywords_pos, item_keywords_neg, item_embeddings, k=10)
 # 打印出每个用户的推荐结果和倒序分数
-print(user_recommendations_scores)
+# print(user_recommendations_scores)
 
 # 随机推荐
 all_pred_random = Render.random_recommend(user_ids)
 # 采用两个逻辑模型处理后的匹配结果
+print("逻辑模型推荐结果:")
 precision, recall = Render.Recall_analyse(user_recommendations, user_gt_items, user_ids)
 # 随机推荐的结果
+print("随机推荐结果:")
 ran_precision, ran_recall = Render.Recall_analyse(all_pred_random, user_gt_items, user_ids)
+
+# 在文件末尾添加保存和加载函数
+def save_recommendation_model(item_keywords_pos, item_keywords_neg, item_embeddings, item_pool, save_path):
+    """保存推荐模型的所有组件"""
+    # 创建保存目录
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    
+    model_data = {
+        'item_keywords_pos': item_keywords_pos,
+        'item_keywords_neg': item_keywords_neg, 
+        'item_pool': item_pool
+    }
+    
+    # 保存模型参数
+    with open(save_path + '_params.pkl', 'wb') as f:
+        pickle.dump(model_data, f)
+    
+    # 保存嵌入向量
+    torch.save(item_embeddings, save_path + '_embeddings.pt')
+    
+    print(f"模型已保存到: {save_path}")
+
+print("\n" + "="*50)
+print("保存推荐模型...")
+save_recommendation_model(item_keywords_pos, item_keywords_neg, item_embeddings, item_pool, 
+                         'DRL-code-pytorch-main/Course_DQN/saved_models/direct_rec_model')
+
